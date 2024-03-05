@@ -1,0 +1,4 @@
+---
+- name: Wait for 7 minutes after SSG service restart
+  pause:
+    seconds: 420

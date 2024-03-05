@@ -1,0 +1,6 @@
+---
+- name: Copy datadog configuration file
+  copy:
+    src: "files/datadog_config.yml"
+    dest: "/etc/datadog.agent/datadog.yml"
+    backup: yes

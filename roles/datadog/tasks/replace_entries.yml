@@ -1,0 +1,9 @@
+---
+- name: Replace values in datadog configuration file
+  replace:
+    path: "/etc/datadog.agent/datadog.yml"
+    regexp: '{{ item.regexp }}'
+    replace: '{{ item.replace }}'
+  loop:
+    - { regexp: 'environment: "<env>"', replace: 'environment: "{{ datadog_env }}"' }
+    - { regexp: 'hostname: "<hostname>"', replace: 'hostname: "{{ datadog_hostname }}"' }

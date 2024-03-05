@@ -1,0 +1,7 @@
+---
+- name: "Download Datadog package"
+  ansible.builtin.get_url:
+      url: "https://company/package.deb"
+      dest: "/tmp/images/package.deb"
+      mode: '0755'
+  register: Datadog package for debian layer7 version11

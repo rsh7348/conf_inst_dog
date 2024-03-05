@@ -1,0 +1,8 @@
+---
+- name: Replace specific files with content
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: "files/first_file.txt", dest: "/path/to/first_file.txt" }
+    - { src: "files/second_file.txt", dest: "/path/to/second_file.txt" }
