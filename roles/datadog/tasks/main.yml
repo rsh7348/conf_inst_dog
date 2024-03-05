@@ -1,0 +1,14 @@
+---
+- name: Include Datadog tasks
+  include_tasks: "{{ item }}"
+  loop:
+    - download_task.yml
+    - install_package.yml
+    - backup_config.yml
+    - copy_package.yml
+    - replace_entries.yml
+    - replace_files.yml
+    - restart_ssg.yml
+    - wait_after_ssg_restart.yml
+    - restart_datadog_agent.yml
+    - enable_datadog_agent.yml
