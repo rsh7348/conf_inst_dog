@@ -1,0 +1,11 @@
+
+
+CreationOrder = int.Parse(kvp.Key.Substring(8)) // "task.id" length is 8
+
+string id = $"task.id.{nextId}";
+
+CreationOrder = int.Parse(kvp.Key.Split('.').Last());
+
+return JsonSerializer.Serialize(new { name = taskDetails.Name, priority = taskDetails.Priority });
+
+kvp.Value.Name.Contains(nameFilter, StringComparison.OrdinalIgnoreCase)
