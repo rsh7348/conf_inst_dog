@@ -1,0 +1,132 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Solution
+{
+    public class SimpleTaskManagementSystem : SimpleTaskManagementSystemBase
+    {
+        private int nextId = 1;
+        private Dictionary<string, (string Name, int Priority)> tasks = new Dictionary<string, (string Name, int Priority)>();
+        private Dictionary<string, (int Quota, List<(string TaskId, int Deadline)> Assignments)> users = new Dictionary<string, (int, List<(string, int)>)>();
+
+        public override string AddTask(string name, int priority)
+        {
+            string id = $"task.id{nextId}";
+            tasks[id] = (name, priority);
+            nextId++;
+            return id;
+        }
+
+        public override bool UpdateTask(string taskId, string name, int priority)
+        {
+            if (!tasks.ContainsKey(taskId))
+            {
+                return false;
+            }
+            tasks[taskId] = (name, priority);
+            return true;
+        }
+
+        public override string? GetTask(string taskId)
+        {
+            if (!tasks.TryGetValue(taskId, out var taskDetails))
+            {
+                return null;
+            }
+            string json = $"{{ \"name\": \"{taskDetails.Name}\", \"priority\": {taskDetails.Priority} }}";
+            return json;
+        }
+
+        public override List<string> SearchTasks(string nameFilter, int maxResults)
+        {
+            if (maxResults <= 0)
+            {
+                return new List<string>();
+            }
+
+            var matchingTasks = tasks
+                .Where(kvp => kvp.Value.Name.Contains(nameFilter))
+                .Select(kvp => new
+                {
+                    Id = kvp.Key,
+                    Priority = kvp.Value.Priority,
+                    CreationOrder = int.Parse(kvp.Key.Substring(7))
+                })
+                .OrderByDescending(x => x.Priority)
+                .ThenBy(x => x.CreationOrder)
+                .Take(maxResults)
+                .Select(x => x.Id)
+                .ToList();
+
+            return matchingTasks;
+        }
+
+        public override List<string> ListTasksSorted(int limit)
+        {
+            if (limit <= 0)
+            {
+                return new List<string>();
+            }
+
+            var sortedTasks = tasks
+                .Select(kvp => new
+                {
+                    Id = kvp.Key,
+                    Priority = kvp.Value.Priority,
+                    CreationOrder = int.Parse(kvp.Key.Substring(7))
+                })
+                .OrderByDescending(x => x.Priority)
+                .ThenBy(x => x.CreationOrder)
+                .Take(limit)
+                .Select(x => x.Id)
+                .ToList();
+
+            return sortedTasks;
+        }
+
+        public override bool AddUser(string userId, int quota)
+        {
+            if (users.ContainsKey(userId))
+            {
+                return false;
+            }
+            users[userId] = (quota, new List<(string TaskId, int Deadline)>());
+            return true;
+        }
+
+        public override bool AssignTask(string taskId, string userId, int deadline)
+        {
+            if (!tasks.ContainsKey(taskId))
+            {
+                return false;
+            }
+            if (!users.ContainsKey(userId))
+            {
+                return false;
+            }
+            var userData = users[userId];
+            if (userData.Assignments.Count >= userData.Quota)
+            {
+                return false;
+            }
+            userData.Assignments.Add((taskId, deadline));
+            return true;
+        }
+
+        public override List<string> GetUserTasks(string userId)
+        {
+            if (!users.ContainsKey(userId))
+            {
+                return new List<string>();
+            }
+            var userData = users[userId];
+            var sortedTaskIds = userData.Assignments
+                .OrderBy(a => a.Deadline)
+                .ThenBy(a => int.Parse(a.TaskId.Substring(7)))
+                .Select(a => a.TaskId)
+                .ToList();
+            return sortedTaskIds;
+        }
+    }
+}
