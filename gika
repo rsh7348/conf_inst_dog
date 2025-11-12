@@ -1,11 +1,90 @@
-public override string? GetTask(string taskId)
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+
+namespace Solution
 {
-    if (!tasks.TryGetValue(taskId, out var taskDetails))
+    public class SimpleTaskManagementSystem : SimpleTaskManagementSystemBase
     {
-        return null;
+        private int nextId = 1;
+        private Dictionary<string, (string Name, int Priority)> tasks = new Dictionary<string, (string Name, int Priority)>();
+
+        public override string AddTask(string name, int priority)
+        {
+            string id = $"task.id{nextId}";
+            tasks[id] = (name, priority);
+            nextId++;
+            return id;
+        }
+
+        public override bool UpdateTask(string taskId, string name, int priority)
+        {
+            if (!tasks.ContainsKey(taskId))
+            {
+                return false;
+            }
+            tasks[taskId] = (name, priority);
+            return true;
+        }
+
+        public override string? GetTask(string taskId)
+        {
+            if (!tasks.TryGetValue(taskId, out var taskDetails))
+            {
+                return null;
+            }
+            string json = $"{{ \"name\": \"{taskDetails.Name}\", \"priority\": {taskDetails.Priority} }}";
+            return json;
+        }
+
+        public override List<string> SearchTasks(string nameFilter, int maxResults)
+        {
+            if (maxResults <= 0)
+            {
+                return new List<string>();
+            }
+
+            var matchingTasks = tasks
+                .Where(kvp => kvp.Value.Name.Contains(nameFilter))
+                .Select(kvp => new
+                {
+                    Id = kvp.Key,
+                    Priority = kvp.Value.Priority,
+                    CreationOrder = int.Parse(kvp.Key.Substring(7)) // Length of "task.id"
+                })
+                .OrderByDescending(x => x.Priority)
+                .ThenBy(x => x.CreationOrder)
+                .Take(maxResults)
+                .Select(x => x.Id)
+                .ToList();
+
+            return matchingTasks;
+        }
+
+        public override List<string> ListTasksSorted(int limit)
+        {
+            if (limit <= 0)
+            {
+                return new List<string>();
+            }
+
+            var sortedTasks = tasks
+                .Select(kvp => new
+                {
+                    Id = kvp.Key,
+                    Priority = kvp.Value.Priority,
+                    CreationOrder = int.Parse(kvp.Key.Substring(7)) // Length of "task.id"
+                })
+                .OrderByDescending(x => x.Priority)
+                .ThenBy(x => x.CreationOrder)
+                .Take(limit)
+                .Select(x => x.Id)
+                .ToList();
+
+            return sortedTasks;
+        }
     }
-    string json = $"{{ \"name\": \"{taskDetails.Name}\", \"priority\": {taskDetails.Priority} }}";
-    return json;
 }
 
 
